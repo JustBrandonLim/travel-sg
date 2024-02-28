@@ -1,0 +1,1 @@
+DROP TABLE bus_stop, bus_service, bus_route;
