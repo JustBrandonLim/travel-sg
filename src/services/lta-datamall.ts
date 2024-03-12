@@ -33,13 +33,15 @@ export async function GetBusStops() {
     }
 
     busStops = busStops.concat(
-      busStopsResponseData.value.map((busStop) => ({
-        code: busStop.BusStopCode,
-        name: busStop.Description,
-        road: busStop.RoadName,
-        latitude: busStop.Latitude,
-        longitude: busStop.Longitude,
-      }))
+      busStopsResponseData.value.map((busStop) => {
+        return {
+          code: busStop.BusStopCode,
+          name: busStop.Description,
+          road: busStop.RoadName,
+          latitude: busStop.Latitude,
+          longitude: busStop.Longitude,
+        };
+      })
     );
 
     skipCount += 500;
@@ -74,13 +76,15 @@ export async function GetBusServices() {
     }
 
     busServices = busServices.concat(
-      busServicesResponseData.value.map((busService) => ({
-        number: busService.ServiceNo,
-        originCode: busService.OriginCode,
-        destinationCode: busService.DestinationCode,
-        operator: busService.Operator,
-        direction: busService.Direction,
-      }))
+      busServicesResponseData.value.map((busService) => {
+        return {
+          number: busService.ServiceNo,
+          originCode: busService.OriginCode,
+          destinationCode: busService.DestinationCode,
+          operator: busService.Operator,
+          direction: busService.Direction,
+        };
+      })
     );
 
     skipCount += 500;
@@ -115,11 +119,13 @@ export async function GetBusRoutes() {
     }
 
     busRoutes = busRoutes.concat(
-      busRoutesResponseData.value.map((busRoute) => ({
-        code: busRoute.BusStopCode,
-        number: busRoute.ServiceNo,
-        sequence: busRoute.StopSequence,
-      }))
+      busRoutesResponseData.value.map((busRoute) => {
+        return {
+          code: busRoute.BusStopCode,
+          number: busRoute.ServiceNo,
+          sequence: busRoute.StopSequence,
+        };
+      })
     );
 
     skipCount += 500;
