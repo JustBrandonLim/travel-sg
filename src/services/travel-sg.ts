@@ -104,7 +104,8 @@ export async function GetBusStops() {
   let busStops: BusStop[] = [];
 
   try {
-    const busStopsResponseData = await sql`SELECT * FROM bus_stop;`;
+    const busStopsResponseData =
+      await sql`SELECT "code", "name", "road", "latitude", "longitude" FROM "bus_stop";`;
 
     if (busStopsResponseData.rowCount !== 0) {
       busStops = busStopsResponseData.rows as BusStop[];
@@ -139,7 +140,8 @@ export async function GetBusRoutes() {
   let busRoutes: BusRoute[] = [];
 
   try {
-    const busRoutesResponseData = await sql`SELECT * FROM bus_route;`;
+    const busRoutesResponseData =
+      await sql`SELECT "code", "number", "sequence" FROM "bus_route";`;
 
     if (busRoutesResponseData.rowCount !== 0) {
       busRoutes = busRoutesResponseData.rows as BusRoute[];

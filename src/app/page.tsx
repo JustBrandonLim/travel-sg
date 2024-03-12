@@ -10,8 +10,12 @@ export default function Home() {
 
   const [busStops, setBusStops] = useState<BusStop[]>([]);
 
+  const [timeTaken, setTimeTaken] = useState<number>(-1);
+
   async function handleClick() {
     setLoading(true);
+
+    let startTime = Date.now();
 
     const response = await fetch("/api/internal/bus/stops", {
       method: "GET",
@@ -19,7 +23,13 @@ export default function Home() {
 
     const data: BusStop[] = await response.json();
 
+    console.log(data);
+
+    let endTime = Date.now();
+
     setBusStops(data);
+
+    setTimeTaken(endTime - startTime);
 
     setLoading(false);
   }
@@ -39,7 +49,14 @@ export default function Home() {
       </div>
 
       <div className="flex flex-col gap-5 border border-red-500 rounded-md p-5">
-        <p>Output</p>
+        <p>
+          Output{" "}
+          {busStops.length > 0 && timeTaken !== -1 && (
+            <span>
+              (Fetched {busStops.length} records in {timeTaken} ms.)
+            </span>
+          )}
+        </p>
         {busStops.length > 0 &&
           busStops.map((busStop) => (
             <div className="flex gap-5" key={busStop.code}>
