@@ -1,12 +1,11 @@
 import { BusStop, BusService, BusRoute } from "@interfaces/travel-sg";
 import { sql } from "@vercel/postgres";
 
+/*
 export async function UpsertBusStops(busStops: BusStop[]) {
   busStops = busStops.filter((busStop) => {
     return (
-      busStops.findIndex(
-        (anotherBusStop) => anotherBusStop.code === busStop.code
-      ) === -1 &&
+      busStops.findIndex((anotherBusStop) => anotherBusStop.code === busStop.code) === -1 &&
       busStop.code &&
       busStop.name &&
       busStop.road &&
@@ -37,9 +36,7 @@ export async function UpsertBusStops(busStops: BusStop[]) {
 export async function UpsertBusServices(busServices: BusService[]) {
   busServices = busServices.filter((busService) => {
     return (
-      busServices.findIndex(
-        (anotherBusService) => anotherBusService.number === busService.number
-      ) === -1 &&
+      busServices.findIndex((anotherBusService) => anotherBusService.number === busService.number) === -1 &&
       busService.number &&
       busService.originCode &&
       busService.destinationCode &&
@@ -70,11 +67,7 @@ export async function UpsertBusServices(busServices: BusService[]) {
 export async function UpsertBusRoutes(busRoutes: BusRoute[]) {
   busRoutes = busRoutes.filter((busRoute) => {
     return (
-      busRoutes.findIndex(
-        (anotherBusRoute) =>
-          anotherBusRoute.code === busRoute.code &&
-          anotherBusRoute.number === busRoute.number
-      ) === -1 &&
+      busRoutes.findIndex((anotherBusRoute) => anotherBusRoute.code === busRoute.code && anotherBusRoute.number === busRoute.number) === -1 &&
       busRoute.code &&
       busRoute.number &&
       busRoute.sequence
@@ -99,19 +92,27 @@ export async function UpsertBusRoutes(busRoutes: BusRoute[]) {
     return false;
   }
 }
+*/
+
+export async function DeleteBusStops() {
+  try {
+    await sql`TRUNCATE "bus_stop";`;
+  } catch (exception) {
+    console.error(exception);
+  }
+}
 
 export async function GetBusStops() {
   let busStops: BusStop[] = [];
 
   try {
-    const busStopsResponseData =
-      await sql`SELECT "code", "name", "road", "latitude", "longitude" FROM "bus_stop";`;
+    const busStopsResponseData = await sql`SELECT "code", "name", "road", "latitude", "longitude" FROM "bus_stop";`;
 
     if (busStopsResponseData.rowCount !== 0) {
       busStops = busStopsResponseData.rows as BusStop[];
     }
   } catch (exception) {
-    console.log(exception);
+    console.error(exception);
   } finally {
     return busStops;
   }
@@ -130,7 +131,7 @@ export async function GetBusServices() {
       busServices = busServicesResponseData.rows as BusService[];
     }
   } catch (exception) {
-    console.log(exception);
+    console.error(exception);
   } finally {
     return busServices;
   }
@@ -140,14 +141,13 @@ export async function GetBusRoutes() {
   let busRoutes: BusRoute[] = [];
 
   try {
-    const busRoutesResponseData =
-      await sql`SELECT "code", "number", "sequence" FROM "bus_route";`;
+    const busRoutesResponseData = await sql`SELECT "code", "number", "sequence" FROM "bus_route";`;
 
     if (busRoutesResponseData.rowCount !== 0) {
       busRoutes = busRoutesResponseData.rows as BusRoute[];
     }
   } catch (exception) {
-    console.log(exception);
+    console.error(exception);
   } finally {
     return busRoutes;
   }

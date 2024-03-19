@@ -1,75 +1,49 @@
 import { BusStop, BusService, BusRoute } from "@interfaces/travel-sg";
-import {
-  BusStopsResponseData,
-  BusServicesResponseData,
-  BusRoutesResponseData,
-} from "@interfaces/lta-datamall";
+import { BusStopsResponseData, BusServicesResponseData, BusRoutesResponseData } from "@interfaces/lta-datamall";
 
-export async function GetBusStops() {
-  try {
-    const busStopsResponse = await fetch(
-      `http://datamall2.mytransport.sg/ltaodataservice/BusStops?$skip=${skipCount}`,
-      {
-        method: "GET",
-        headers: {
-          AccountKey: process.env["LTA_DATAMALL_ACCOUNT_KEY"] as string,
-        },
-      }
-    );
-
+export async function GetBusStops(): Promise<BusStop[]> {
+  for (let retryCount = 0; retryCount < 3; retryCount += 1) {
     try {
-    } catch (exception) {
-      console.error("[GetBusStops]: Error on parsing.");
-    }
-  } catch (exception) {
-    console.error("[GetBusStops]: Error on fetch.");
-  }
+      let busStops: BusStop[] = [];
+      let skipCount = 0;
 
-  /*let busStops: BusStop[] = [];
-
-  let retryCount = 0;
-
-  while (true) {
-    try {
-      const busStopsResponse = await fetch(
-        `http://datamall2.mytransport.sg/ltaodataservice/BusStops?$skip=${skipCount}`,
-        {
+      while (true) {
+        const busStopsResponse = await fetch(`http://datamall2.mytransport.sg/ltaodataservice/BusStops?$skip=${skipCount}`, {
           method: "GET",
           headers: {
             AccountKey: process.env["LTA_DATAMALL_ACCOUNT_KEY"] as string,
           },
+        });
+
+        if (busStopsResponse.status !== 200) {
+          throw new Error("Response status is not 200.");
         }
-      );
+        const busStopsResponseData: BusStopsResponseData = await busStopsResponse.json();
 
-      if (busStopsResponse.status !== 200) {
-        return busStops;
+        if (busStopsResponseData.value.length === 0) {
+          return busStops;
+        }
+
+        busStops = busStops.concat(
+          busStopsResponseData.value.map((busStop) => {
+            return {
+              code: busStop.BusStopCode,
+              name: busStop.Description,
+              road: busStop.RoadName,
+              latitude: busStop.Latitude,
+              longitude: busStop.Longitude,
+            };
+          })
+        );
+
+        skipCount += 500;
       }
+    } catch (exception) {
+      console.error(exception);
+    }
+  }
 
-      const busStopsResponseData: BusStopsResponseData =
-        await busStopsResponse.json();
-
-      if (busStopsResponseData.value.length === 0) {
-        return busStops;
-      }
-
-      busStops = busStops.concat(
-        busStopsResponseData.value.map((busStop) => {
-          return {
-            code: busStop.BusStopCode,
-            name: busStop.Description,
-            road: busStop.RoadName,
-            latitude: busStop.Latitude,
-            longitude: busStop.Longitude,
-          };
-        })
-      );
-
-      if (busStopsResponseData.value.length !== 500) {
-        return busStops;
-      }
-
-      skipCount += 500;
-  }*/
+  return [];
 }
 
 export async function GetBusServices() {
@@ -78,22 +52,18 @@ export async function GetBusServices() {
   let skipCount = 0;
 
   while (true) {
-    const busServicesResponse = await fetch(
-      `http://datamall2.mytransport.sg/ltaodataservice/BusServices?$skip=${skipCount}`,
-      {
-        method: "GET",
-        headers: {
-          AccountKey: process.env["LTA_DATAMALL_ACCOUNT_KEY"] as string,
-        },
-      }
-    );
+    const busServicesResponse = await fetch(`http://datamall2.mytransport.sg/ltaodataservice/BusServices?$skip=${skipCount}`, {
+      method: "GET",
+      headers: {
+        AccountKey: process.env["LTA_DATAMALL_ACCOUNT_KEY"] as string,
+      },
+    });
 
     if (busServicesResponse.status !== 200) {
       return busServices;
     }
 
-    const busServicesResponseData: BusServicesResponseData =
-      await busServicesResponse.json();
+    const busServicesResponseData: BusServicesResponseData = await busServicesResponse.json();
 
     if (busServicesResponseData.value.length !== 500) {
       return busServices;
@@ -121,22 +91,18 @@ export async function GetBusRoutes() {
   let skipCount = 0;
 
   while (true) {
-    const busRoutesResponse = await fetch(
-      `http://datamall2.mytransport.sg/ltaodataservice/BusRoutes?$skip=${skipCount}`,
-      {
-        method: "GET",
-        headers: {
-          AccountKey: process.env["LTA_DATAMALL_ACCOUNT_KEY"] as string,
-        },
-      }
-    );
+    const busRoutesResponse = await fetch(`http://datamall2.mytransport.sg/ltaodataservice/BusRoutes?$skip=${skipCount}`, {
+      method: "GET",
+      headers: {
+        AccountKey: process.env["LTA_DATAMALL_ACCOUNT_KEY"] as string,
+      },
+    });
 
     if (busRoutesResponse.status !== 200) {
       return busRoutes;
     }
 
-    const busRoutesResponseData: BusRoutesResponseData =
-      await busRoutesResponse.json();
+    const busRoutesResponseData: BusRoutesResponseData = await busRoutesResponse.json();
 
     if (busRoutesResponseData.value.length !== 500) {
       return busRoutes;
