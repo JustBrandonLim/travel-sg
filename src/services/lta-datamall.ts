@@ -6,11 +6,7 @@ import {
 } from "@interfaces/lta-datamall";
 
 export async function GetBusStops() {
-  let busStops: BusStop[] = [];
-
-  let skipCount = 0;
-
-  while (true) {
+  try {
     const busStopsResponse = await fetch(
       `http://datamall2.mytransport.sg/ltaodataservice/BusStops?$skip=${skipCount}`,
       {
@@ -21,31 +17,59 @@ export async function GetBusStops() {
       }
     );
 
-    if (busStopsResponse.status !== 200) {
-      return busStops;
+    try {
+    } catch (exception) {
+      console.error("[GetBusStops]: Error on parsing.");
     }
-
-    const busStopsResponseData: BusStopsResponseData =
-      await busStopsResponse.json();
-
-    if (busStopsResponseData.value.length === 0) {
-      return busStops;
-    }
-
-    busStops = busStops.concat(
-      busStopsResponseData.value.map((busStop) => {
-        return {
-          code: busStop.BusStopCode,
-          name: busStop.Description,
-          road: busStop.RoadName,
-          latitude: busStop.Latitude,
-          longitude: busStop.Longitude,
-        };
-      })
-    );
-
-    skipCount += 500;
+  } catch (exception) {
+    console.error("[GetBusStops]: Error on fetch.");
   }
+
+  /*let busStops: BusStop[] = [];
+
+  let retryCount = 0;
+
+  while (true) {
+    try {
+      const busStopsResponse = await fetch(
+        `http://datamall2.mytransport.sg/ltaodataservice/BusStops?$skip=${skipCount}`,
+        {
+          method: "GET",
+          headers: {
+            AccountKey: process.env["LTA_DATAMALL_ACCOUNT_KEY"] as string,
+          },
+        }
+      );
+
+      if (busStopsResponse.status !== 200) {
+        return busStops;
+      }
+
+      const busStopsResponseData: BusStopsResponseData =
+        await busStopsResponse.json();
+
+      if (busStopsResponseData.value.length === 0) {
+        return busStops;
+      }
+
+      busStops = busStops.concat(
+        busStopsResponseData.value.map((busStop) => {
+          return {
+            code: busStop.BusStopCode,
+            name: busStop.Description,
+            road: busStop.RoadName,
+            latitude: busStop.Latitude,
+            longitude: busStop.Longitude,
+          };
+        })
+      );
+
+      if (busStopsResponseData.value.length !== 500) {
+        return busStops;
+      }
+
+      skipCount += 500;
+  }*/
 }
 
 export async function GetBusServices() {
@@ -71,7 +95,7 @@ export async function GetBusServices() {
     const busServicesResponseData: BusServicesResponseData =
       await busServicesResponse.json();
 
-    if (busServicesResponseData.value.length === 0) {
+    if (busServicesResponseData.value.length !== 500) {
       return busServices;
     }
 
@@ -114,7 +138,7 @@ export async function GetBusRoutes() {
     const busRoutesResponseData: BusRoutesResponseData =
       await busRoutesResponse.json();
 
-    if (busRoutesResponseData.value.length === 0) {
+    if (busRoutesResponseData.value.length !== 500) {
       return busRoutes;
     }
 
