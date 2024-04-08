@@ -8,15 +8,15 @@ CREATE TABLE IF NOT EXISTS bus_stop (
 
 CREATE TABLE IF NOT EXISTS bus_service (
   number VARCHAR(4) PRIMARY KEY,
-  origin_code VARCHAR(5) REFERENCES bus_stop(code),
-  destination_code VARCHAR(5) REFERENCES bus_stop(code),
+  origin_code VARCHAR(5) REFERENCES bus_stop(code) ON DELETE CASCADE,
+  destination_code VARCHAR(5) REFERENCES bus_stop(code) ON DELETE CASCADE,
   operator VARCHAR(4) NOT NULL,
   direction NUMERIC(1) NOT NULL
 );
 
 CREATE TABLE IF NOT EXISTS bus_route (
-  code VARCHAR(5) REFERENCES bus_stop(code),
-  number VARCHAR(4) REFERENCES bus_service(number),
+  code VARCHAR(5) REFERENCES bus_stop(code) ON DELETE CASCADE,
+  number VARCHAR(4) REFERENCES bus_service(number) ON DELETE CASCADE,
   sequence NUMERIC(3) NOT NULL,
   PRIMARY KEY(code, number)
 );

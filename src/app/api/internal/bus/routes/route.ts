@@ -5,7 +5,16 @@ import { NextResponse } from "next/server";
 export const runtime = "edge";
 
 export async function GET() {
-  let busRoutes: BusRoute[] = await GetBusRoutes();
+  try {
+    console.info("[api/internal/bus/routes]: GET()");
 
-  return NextResponse.json(busRoutes, { status: 200 });
+    console.info("[api/internal/bus/routes]: Getting BusRoutes from TravelSG");
+    const busRoutes: BusRoute[] = await GetBusRoutes();
+
+    return NextResponse.json(busRoutes, { status: 200 });
+  } catch (exception) {
+    console.error(exception);
+
+    return NextResponse.json({ message: "An error has occurred." }, { status: 500 });
+  }
 }
