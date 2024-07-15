@@ -1,12 +1,15 @@
 import type { Metadata } from "next";
-import { Inter, JetBrains_Mono } from "next/font/google";
+import { Inter, Josefin_Sans } from "next/font/google";
 import "./globals.css";
-import NavigationBar from "@components/navigation-bar";
+
+import Header from "@components/common/header";
+import SideBar from "@components/common/side-bar";
+import Footer from "@components/common/footer";
 
 const inter = Inter({ subsets: ["latin"], variable: "--font-inter" });
-const jetBrainsMono = JetBrains_Mono({
+const josefinSans = Josefin_Sans({
   subsets: ["latin"],
-  variable: "--font-jetbrains-mono",
+  variable: "--font-josefin-sans",
 });
 
 export const metadata: Metadata = {
@@ -21,10 +24,16 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body className={`${inter.variable} ${jetBrainsMono.variable} font-inter gap-3 flex min-h-screen bg-gray-200 flex-col`}>
-        <h1 className="font-bold p-5">TravelSG</h1>
-        <main className="grow flex flex-col">{children}</main>
-        <NavigationBar />
+      <body
+        className={
+          `${inter.variable} ${josefinSans.variable} text-xs overscroll-none font-inter max-h-svh h-svh min-h-svh flex flex-col gap-3 p-3` /* dark:bg-neutral-900 */
+        }>
+        <Header />
+        <div className="grow overflow-hidden flex gap-3">
+          <SideBar />
+          {children}
+        </div>
+        <Footer />
       </body>
     </html>
   );

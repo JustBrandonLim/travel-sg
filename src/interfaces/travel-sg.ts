@@ -19,3 +19,14 @@ export interface BusRoute {
   number: string;
   sequence: number;
 }
+
+export interface BusArrival {
+  code: string;
+  number: string;
+  arrivals: {
+    arrival: string;
+    load: string;
+    feature: string;
+    type: string;
+  }[];
+}

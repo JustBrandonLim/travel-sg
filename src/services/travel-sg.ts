@@ -1,4 +1,4 @@
-import { BusStop, BusService, BusRoute } from "@interfaces/travel-sg";
+import { BusStop, BusService, BusRoute, BusArrival } from "@interfaces/travel-sg";
 import { sql } from "@vercel/postgres";
 
 /**
@@ -26,7 +26,8 @@ export async function InsertBusStops(busStops: BusStop[]): Promise<BusStop[]> {
 
     await sql`
       INSERT INTO "bus_stop"("code", "name", "road", "latitude", "longitude")
-      SELECT "code", "name", "road", "latitude", "longitude" FROM json_to_recordset(${JSON.stringify(
+      SELECT "code", "name", "road", "latitude", "longitude"
+      FROM json_to_recordset(${JSON.stringify(
         busStops
       )}) AS "bus_stop"("code" VARCHAR(5), "name" VARCHAR(255), "road" VARCHAR(255), "latitude" NUMERIC(17, 14), "longitude" NUMERIC(17, 14));
     `;
@@ -72,7 +73,8 @@ export async function InsertBusServices(busStops: BusStop[], busServices: BusSer
 
     await sql`
       INSERT INTO "bus_service"("number", "origin_code", "destination_code", "operator", "direction")
-      SELECT "number", "originCode" AS "origin_code", "destinationCode" AS "destination_code", "operator", "direction" FROM json_to_recordset(${JSON.stringify(
+      SELECT "number", "originCode" AS "origin_code", "destinationCode" AS "destination_code", "operator", "direction"
+      FROM json_to_recordset(${JSON.stringify(
         busServices
       )}) AS "bus_service"("number" VARCHAR(4), "originCode" VARCHAR(5), "destinationCode" VARCHAR(5), "operator" VARCHAR(4), "direction" NUMERIC(1));
     `;
@@ -117,9 +119,8 @@ export async function InsertBusRoutes(busStops: BusStop[], busServices: BusServi
 
     await sql`
       INSERT INTO "bus_route"("code", "number", "sequence")
-      SELECT "code", "number", "sequence" FROM json_to_recordset(${JSON.stringify(
-        busRoutes
-      )}) AS "bus_route"("code" VARCHAR(5), "number" VARCHAR(4), "sequence" NUMERIC(3))
+      SELECT "code", "number", "sequence"
+      FROM json_to_recordset(${JSON.stringify(busRoutes)}) AS "bus_route"("code" VARCHAR(5), "number" VARCHAR(4), "sequence" NUMERIC(3))
     `;
 
     return busRoutes;
@@ -135,7 +136,8 @@ export async function GetBusStops(): Promise<BusStop[]> {
     console.info("[services/travel-sg]: GetBusStops()");
 
     const busStopsResponseData = await sql`
-      SELECT "code", "name", "road", "latitude", "longitude" FROM "bus_stop";
+      SELECT "code", "name", "road", "latitude", "longitude" 
+      FROM "bus_stop";
     `;
 
     return busStopsResponseData.rows as BusStop[];
@@ -168,10 +170,90 @@ export async function GetBusRoutes(): Promise<BusRoute[]> {
     console.info("[services/travel-sg]: GetBusRoutes()");
 
     const busRoutesResponseData = await sql`
-      SELECT "code", "number", "sequence" FROM "bus_route";
+      SELECT "code", "number", "sequence" 
+      FROM "bus_route";
     `;
 
     return busRoutesResponseData.rows as BusRoute[];
+  } catch (exception) {
+    console.error(exception);
+
+    throw exception;
+  }
+}
+
+export async function GetNearestBusStops(location: { latitude: number; longitude: number }): Promise<BusStop[]> {
+  try {
+    console.info("[services/travel-sg]: GetNearestBusStops()");
+
+    const nearestBusStopsResponseData = await sql`
+      SELECT "code", "name", "road", "latitude", "longitude", 
+      (3959 * acos(cos(radians(${location.latitude})) * cos(radians("latitude")) * cos(radians("longitude") - radians(${location.longitude})) + sin(radians(${location.latitude})) * sin(radians("latitude"))))
+      AS "distance" FROM "bus_stop" ORDER BY "distance" LIMIT 10;
+    `;
+
+    return nearestBusStopsResponseData.rows as BusStop[];
+  } catch (exception) {
+    console.error(exception);
+
+    throw exception;
+  }
+}
+
+export async function GetBusArrivals(code: string): Promise<BusArrival[]> {
+  try {
+    console.info("[services/travel-sg]: GetBusArrivals()");
+
+    const busStopInformationResponseData = await sql`
+      SELECT "bus_stop"."code", "bus_stop"."name", "bus_stop"."road"
+      FROM "bus_stop"
+      FULL JOIN "bus_route"
+      ON "bus_route"."code" = "bus_stop"."code"
+      WHERE "bus_route"."code" = ${code};
+    `;
+
+    if (busStopInformationResponseData.rows.length === 0) {
+      return [];
+    }
+
+    const busServicesInformationResponseData = await sql`
+      SELECT "bus_service"."number"
+      FROM "bus_service"
+      FULL JOIN "bus_route"
+      ON "bus_route"."number" = "bus_service"."number"
+      WHERE "bus_route"."code" = ${code};
+    `;
+
+    if (busServicesInformationResponseData.rows.length === 0) {
+      return [];
+    }
+
+    return busServicesInformationResponseData.rows.map((busService) => {
+      return {
+        code: code,
+        number: busService.number,
+        arrivals: [
+          {
+            arrival: "-",
+            load: "-",
+            feature: "-",
+            type: "-",
+          },
+          {
+            arrival: "-",
+            load: "-",
+            feature: "-",
+            type: "-",
+          },
+          {
+            arrival: "-",
+            load: "-",
+            feature: "-",
+            type: "-",
+          },
+        ],
+      };
+    });
   } catch (exception) {
     console.error(exception);
 

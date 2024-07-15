@@ -1,7 +1,9 @@
-import NavigationBar from "@components/navigation-bar";
-
 export const runtime = "edge";
 
 export default function HomePage() {
-  return <div>TEST</div>;
+  return (
+    <main className="grow p-3 bg-neutral-300 rounded-md">
+      <h1>TravelSG</h1>
+    </main>
+  );
 }

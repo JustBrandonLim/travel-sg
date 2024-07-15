@@ -6,9 +6,9 @@ export const runtime = "edge";
 
 export async function GET() {
   try {
-    console.info("[api/internal/bus/stops]: GET()");
+    console.info("[api/bus/stops]: GET()");
 
-    console.info("[api/internal/bus/stops]: Getting BusStops from TravelSG");
+    console.info("[api/bus/stops]: Getting BusStops from TravelSG");
     const busStops: BusStop[] = await GetBusStops();
 
     return NextResponse.json(busStops, { status: 200 });
