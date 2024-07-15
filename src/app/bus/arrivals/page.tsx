@@ -52,21 +52,19 @@ export default function BusArrivalsPage() {
             return (
               <div className="flex flex-col gap-1">
                 <h2 className="font-bold text-sm">{busArrival.number}</h2>
-                <div className="flex flex-col gap-1">
-                  {busArrival.arrivals.map((arrival, index) => {
-                    return (
-                      <>
-                        <hr className="bg-black" />
-                        <div key={index} className="flex flex-col gap-1">
-                          <h3>{arrival.arrival}</h3>
-                          <h3>{arrival.load}</h3>
-                          <h3>{arrival.feature}</h3>
-                          <h3>{arrival.type}</h3>
-                        </div>
-                      </>
-                    );
-                  })}
-                </div>
+                {busArrival.arrivals.map((arrival, index) => {
+                  return (
+                    <div key={index} className="flex flex-col gap-1">
+                      <hr className="bg-black" />
+                      <div className="flex flex-col gap-1">
+                        <h3>{arrival.arrival}</h3>
+                        <h3>{arrival.load}</h3>
+                        <h3>{arrival.feature}</h3>
+                        <h3>{arrival.type}</h3>
+                      </div>
+                    </div>
+                  );
+                })}
               </div>
             );
           })}
