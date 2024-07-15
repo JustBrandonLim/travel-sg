@@ -48,9 +48,9 @@ export default function BusArrivalsPage() {
         )}
 
         {ready &&
-          busArrivals.map((busArrival) => {
+          busArrivals.map((busArrival, index) => {
             return (
-              <div className="flex flex-col gap-1">
+              <div key={index} className="flex flex-col gap-1">
                 <h2 className="font-bold text-sm">{busArrival.number}</h2>
                 {busArrival.arrivals.map((arrival, index) => {
                   return (
