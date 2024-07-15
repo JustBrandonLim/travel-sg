@@ -1,7 +1,6 @@
 import { BusArrival } from "@interfaces/travel-sg";
 import { GetBusArrivals as GetBusArrivalsLTA } from "@services/lta-datamall";
 import { GetBusArrivals as GetBusArrivalsTravelSG } from "@services/travel-sg";
-import { Merge } from "@services/common";
 import { NextRequest, NextResponse } from "next/server";
 
 export const runtime = "edge";
