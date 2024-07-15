@@ -21,7 +21,8 @@ export async function POST() {
                 "origin_code" VARCHAR(5) REFERENCES "bus_stop"("code") ON DELETE CASCADE,
                 "destination_code" VARCHAR(5) REFERENCES "bus_stop"("code") ON DELETE CASCADE,
                 "operator" VARCHAR(4) NOT NULL,
-                "direction" NUMERIC(1) NOT NULL
+                "direction" NUMERIC(1) NOT NULL,
+                "loop" NUMERIC(1) NOT NULL
               );
               `;
 

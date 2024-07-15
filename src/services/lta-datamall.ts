@@ -91,6 +91,7 @@ export async function GetBusServices(): Promise<BusService[]> {
               destinationCode: busService.DestinationCode,
               operator: busService.Operator,
               direction: busService.Direction,
+              loop: busService.LoopDesc === "" ? 0 : 1,
             };
           })
         );
@@ -194,8 +195,6 @@ export async function GetBusArrivals(code: string): Promise<BusArrival[]> {
           const firstBusArrival = Math.round((new Date(busArrival.NextBus.EstimatedArrival).getTime() - new Date().getTime()) / 60000);
           const secondBusArrival = Math.round((new Date(busArrival.NextBus2.EstimatedArrival).getTime() - new Date().getTime()) / 60000);
           const thirdBusArrival = Math.round((new Date(busArrival.NextBus3.EstimatedArrival).getTime() - new Date().getTime()) / 60000);
-
-          console.log(busArrival.ServiceNo + " " + busArrival.NextBus3.Load);
 
           return {
             code: code,

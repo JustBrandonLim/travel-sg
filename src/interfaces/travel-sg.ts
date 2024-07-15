@@ -12,6 +12,7 @@ export interface BusService {
   destinationCode: string;
   operator: string;
   direction: number;
+  loop: number;
 }
 
 export interface BusRoute {

@@ -55,11 +55,13 @@ export async function InsertBusServices(busStops: BusStop[], busServices: BusSer
 
     /* Filter */
     // 1. Filter out bus services that are loops, but have mismatch origin and destinations, discarded
-    busServices = busServices.filter(
-      (busService) =>
-        (busService.direction === 1 && busService.originCode === busService.destinationCode) ||
-        (busService.direction === 2 && busService.originCode !== busService.destinationCode)
-    );
+    busServices = busServices.filter((busService) => {
+      return (
+        (busService.direction === 1 && busService.originCode !== busService.destinationCode && busService.loop === 0) ||
+        (busService.direction === 1 && busService.originCode === busService.destinationCode && busService.loop === 1) ||
+        (busService.direction === 2 && busService.originCode !== busService.destinationCode && busService.loop === 0)
+      );
+    });
 
     // 2. Filter out bus services that have duplicate number, discarded
     busServices = busServices.filter((busService, index) => {
@@ -72,11 +74,11 @@ export async function InsertBusServices(busStops: BusStop[], busServices: BusSer
     `;
 
     await sql`
-      INSERT INTO "bus_service"("number", "origin_code", "destination_code", "operator", "direction")
-      SELECT "number", "originCode" AS "origin_code", "destinationCode" AS "destination_code", "operator", "direction"
+      INSERT INTO "bus_service"("number", "origin_code", "destination_code", "operator", "direction", "loop")
+      SELECT "number", "originCode" AS "origin_code", "destinationCode" AS "destination_code", "operator", "direction", "loop"
       FROM json_to_recordset(${JSON.stringify(
         busServices
-      )}) AS "bus_service"("number" VARCHAR(4), "originCode" VARCHAR(5), "destinationCode" VARCHAR(5), "operator" VARCHAR(4), "direction" NUMERIC(1));
+      )}) AS "bus_service"("number" VARCHAR(4), "originCode" VARCHAR(5), "destinationCode" VARCHAR(5), "operator" VARCHAR(4), "direction" NUMERIC(1), "loop" NUMERIC(1));
     `;
 
     return busServices;
