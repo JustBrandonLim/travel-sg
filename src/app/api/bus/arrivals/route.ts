@@ -13,11 +13,6 @@ export async function GET(request: NextRequest) {
     console.info("[api/bus/arrivals]: Getting BusArrivals from LTA");
     const busArrivals: BusArrival[] = await GetBusArrivals(code);
 
-    //console.info("[api/bus/arrivals]: Getting BusArrivals from TravelSG");
-    //const busArrivalsTravelSG: BusArrival[] = await GetBusArrivalsTravelSG(code);
-
-    //console.info("[api/bus/arrivals]: Merging BusArrivals");
-
     return NextResponse.json(busArrivals, { status: 200 });
   } catch (exception) {
     console.error(exception);

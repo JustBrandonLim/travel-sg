@@ -1,7 +1,7 @@
 import { describe, test, expect } from "@jest/globals";
 import { GET } from "./route";
 
-describe("/api/external/bus", () => {
+describe("/api/bus/update", () => {
   test("that the api returns status 200", async () => {
     const response = await GET();
 
