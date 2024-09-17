@@ -61,21 +61,21 @@ export default function DatabasePage() {
         <div className="flex gap-3">
           <button
             onClick={() => setShowBusStopSearchResults(!showBusStopSearchResults)}
-            className={`p-3 outline outline-neutral-300 hover:bg-neutral-300 transition-colors rounded-md ${
+            className={`p-3 outline outline-1 outline-neutral-300 hover:bg-neutral-300 transition-colors rounded-md ${
               showBusStopSearchResults && `bg-neutral-300`
             }`}>
             Bus Stops
           </button>
           <button
             onClick={() => setShowBusServiceSearchResults(!showBusServiceSearchResults)}
-            className={`p-3 outline outline-neutral-300 hover:bg-neutral-300 transition-colors rounded-md ${
+            className={`p-3 outline outline-1 outline-neutral-300 hover:bg-neutral-300 transition-colors rounded-md ${
               showBusServiceSearchResults && `bg-neutral-300`
             }`}>
             Bus Services
           </button>
           <button
             onClick={() => setShowBusRouteSearchResults(!showBusRouteSearchResults)}
-            className={`p-3 outline outline-neutral-300 hover:bg-neutral-300 transition-colors rounded-md ${
+            className={`p-3 outline outline-1 outline-neutral-300 hover:bg-neutral-300 transition-colors rounded-md ${
               showBusRouteSearchResults && `bg-neutral-300`
             }`}>
             Bus Routes

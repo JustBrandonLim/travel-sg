@@ -31,3 +31,9 @@ export interface BusArrival {
     type: string;
   }[];
 }
+
+export interface BusArrivalFeedback {
+  code: string;
+  number: string;
+  content: string;
+}

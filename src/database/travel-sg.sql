@@ -21,3 +21,19 @@ CREATE TABLE IF NOT EXISTS bus_route (
   sequence NUMERIC(3) NOT NULL,
   PRIMARY KEY(code, number)
 );
+
+CREATE TABLE IF NOT EXISTS bus_arrival_feedback(
+  id SERIAL,
+  code VARCHAR(5) REFERENCES bus_stop(code) ON DELETE CASCADE,
+  number VARCHAR(4) REFERENCES bus_service(number) ON DELETE CASCADE,
+  date_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  content VARCHAR(255),
+  PRIMARY KEY(id, code, number)
+);
+
+CREATE TABLE IF NOT EXISTS bus_arrival_feedback_analysis(
+  code VARCHAR(5) REFERENCES bus_stop(code) ON DELETE CASCADE,
+  number VARCHAR(4) REFERENCES bus_service(number) ON DELETE CASCADE,
+  sentiment VARCHAR(255),
+  PRIMARY KEY(code, number)
+);

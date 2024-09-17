@@ -1,1 +1,1 @@
-DROP TABLE bus_stop, bus_service, bus_route;
+DROP TABLE bus_stop, bus_service, bus_route, bus_arrival_feedback, bus_arrival_feedback_analysis;

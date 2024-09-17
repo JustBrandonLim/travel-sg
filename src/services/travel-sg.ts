@@ -1,5 +1,6 @@
-import { BusStop, BusService, BusRoute, BusArrival } from "@interfaces/travel-sg";
+import { BusStop, BusService, BusRoute, BusArrival, BusArrivalFeedback } from "@interfaces/travel-sg";
 import { sql } from "@vercel/postgres";
+import { pipeline } from "@xenova/transformers";
 
 /**
  * This function takes in fetched and transformed BusStops, to filter and store the data into TravelSG's database.
@@ -133,6 +134,40 @@ export async function InsertBusRoutes(busStops: BusStop[], busServices: BusServi
   }
 }
 
+export async function InsertBusArrivalFeedback(code: string, number: string, content: string): Promise<void> {
+  try {
+    console.info("[services/travel-sg]: InsertBusArrivalFeedback()");
+
+    await sql`
+      INSERT INTO "bus_arrival_feedback"("code", "number", "content")
+      VALUES (${code}, ${number}, ${content})
+    `;
+  } catch (exception) {
+    console.error(exception);
+
+    throw exception;
+  }
+}
+
+export async function InsertBusArrivalReviewsAnalysis(): Promise<void> {
+  try {
+    console.info("[services/travel-sg]: AnalyseBusArrivalReviews()");
+
+    const busArrivalReviewsResponseData = await sql`
+      SELECT "code", "number", "content"
+      FROM "bus_arrival_review";
+    `;
+
+    (busArrivalReviewsResponseData.rows as BusArrivalFeedback[]).map((busArrivalReview) => {});
+
+    console.log(busArrivalReviewsResponseData);
+  } catch (exception) {
+    console.error(exception);
+
+    throw exception;
+  }
+}
+
 export async function GetBusStops(): Promise<BusStop[]> {
   try {
     console.info("[services/travel-sg]: GetBusStops()");
@@ -177,6 +212,23 @@ export async function GetBusRoutes(): Promise<BusRoute[]> {
     `;
 
     return busRoutesResponseData.rows as BusRoute[];
+  } catch (exception) {
+    console.error(exception);
+
+    throw exception;
+  }
+}
+
+export async function GetBusArrivalReviews(): Promise<BusArrivalFeedback[]> {
+  try {
+    console.info("[services/travel-sg]: GetBusArrivalReviews()");
+
+    const busArrivalReviewsResponseData = await sql`
+      SELECT "code", "number", "content" 
+      FROM "bus_arrival_review";
+    `;
+
+    return busArrivalReviewsResponseData.rows as BusArrivalFeedback[];
   } catch (exception) {
     console.error(exception);
 
@@ -262,3 +314,5 @@ export async function GetBusArrivals(code: string): Promise<BusArrival[]> {
     throw exception;
   }
 }
+
+export async function AnalyseBusArrivalReviews() {}
