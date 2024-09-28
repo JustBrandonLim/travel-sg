@@ -1,6 +1,6 @@
-import { BusStop, BusService, BusRoute, BusArrival, BusArrivalFeedback } from "@interfaces/travel-sg";
+import { BusStop, BusService, BusRoute, BusArrival, BusArrivalFeedback, BusArrivalAnalysis } from "@interfaces/travel-sg";
 import { sql } from "@vercel/postgres";
-import { pipeline } from "@xenova/transformers";
+import { pipeline, TextClassificationOutput } from "@xenova/transformers";
 
 /**
  * This function takes in fetched and transformed BusStops, to filter and store the data into TravelSG's database.
@@ -149,18 +149,71 @@ export async function InsertBusArrivalFeedback(code: string, number: string, con
   }
 }
 
-export async function InsertBusArrivalReviewsAnalysis(): Promise<void> {
+export async function InsertBusArrivalAnalysis(): Promise<void> {
   try {
-    console.info("[services/travel-sg]: AnalyseBusArrivalReviews()");
+    console.info("[services/travel-sg]: InsertBusArrivalFeedbackAnalysis()");
 
-    const busArrivalReviewsResponseData = await sql`
+    const busArrivalFeedbacksResponseData = await sql`
       SELECT "code", "number", "content"
-      FROM "bus_arrival_review";
+      FROM "bus_arrival_feedback";
     `;
 
-    (busArrivalReviewsResponseData.rows as BusArrivalFeedback[]).map((busArrivalReview) => {});
+    if (busArrivalFeedbacksResponseData.rows.length === 0) {
+      return;
+    }
 
-    console.log(busArrivalReviewsResponseData);
+    const classifier = await pipeline("sentiment-analysis");
+
+    const contents = (busArrivalFeedbacksResponseData.rows as BusArrivalFeedback[]).map((busArrivalFeedback) => {
+      return busArrivalFeedback.content;
+    });
+
+    const sentiments = (await classifier(contents)) as TextClassificationOutput;
+
+    const busArrivalAnalysis: BusArrivalAnalysis[] = [];
+
+    busArrivalFeedbacksResponseData.rows.forEach((busArrivalFeedback, index) => {
+      const sentiment = sentiments[index];
+
+      const busArrivalAnalysisIndex = busArrivalAnalysis.findIndex(
+        (busArrivalAnalysis) => busArrivalAnalysis.code === busArrivalFeedback.code && busArrivalAnalysis.number === busArrivalFeedback.number
+      );
+
+      if (busArrivalAnalysisIndex === -1) {
+        busArrivalAnalysis.push({
+          code: busArrivalFeedback.code,
+          number: busArrivalFeedback.number,
+          positiveSentiment: sentiment.label === "POSITIVE" ? 1 : 0,
+          negativeSentiment: sentiment.label === "NEGATIVE" ? 1 : 0,
+          sentiment: sentiment.label === "POSITIVE" ? "POSITIVE" : "NEGATIVE",
+        });
+      } else {
+        const currentBusArrivalAnalysis = busArrivalAnalysis.at(busArrivalAnalysisIndex)!;
+
+        currentBusArrivalAnalysis.positiveSentiment += sentiment.label === "POSITIVE" ? 1 : 0;
+        currentBusArrivalAnalysis.negativeSentiment += sentiment.label === "NEGATIVE" ? 1 : 0;
+        currentBusArrivalAnalysis.sentiment =
+          currentBusArrivalAnalysis.positiveSentiment > currentBusArrivalAnalysis.negativeSentiment
+            ? "POSITIVE"
+            : currentBusArrivalAnalysis.negativeSentiment > currentBusArrivalAnalysis.positiveSentiment
+            ? "NEGATIVE"
+            : "NEUTRAL";
+      }
+    });
+
+    await sql`
+      TRUNCATE "bus_arrival_analysis" CASCADE;
+    `;
+
+    console.log(busArrivalAnalysis[0].positiveSentiment);
+
+    await sql`
+      INSERT INTO "bus_arrival_analysis"("code", "number", "positive_sentiment", "negative_sentiment", "sentiment")
+      SELECT "code", "number", "positiveSentiment" AS "positive_sentiment", "negativeSentiment" AS "negative_sentiment", "sentiment"
+      FROM json_to_recordset(${JSON.stringify(
+        busArrivalAnalysis
+      )}) AS "bus_arrival_analysis"("code" VARCHAR(5), "number" VARCHAR(4), "positiveSentiment" numeric, "negativeSentiment" numeric, "sentiment" VARCHAR(255));
+    `;
   } catch (exception) {
     console.error(exception);
 
@@ -219,16 +272,33 @@ export async function GetBusRoutes(): Promise<BusRoute[]> {
   }
 }
 
-export async function GetBusArrivalReviews(): Promise<BusArrivalFeedback[]> {
+export async function GetBusArrivalFeedbacks(): Promise<BusArrivalFeedback[]> {
   try {
-    console.info("[services/travel-sg]: GetBusArrivalReviews()");
+    console.info("[services/travel-sg]: GetBusArrivalFeedbacks()");
 
-    const busArrivalReviewsResponseData = await sql`
+    const busArrivalFeedbacksResponseData = await sql`
       SELECT "code", "number", "content" 
-      FROM "bus_arrival_review";
+      FROM "bus_arrival_feedback";
     `;
 
-    return busArrivalReviewsResponseData.rows as BusArrivalFeedback[];
+    return busArrivalFeedbacksResponseData.rows as BusArrivalFeedback[];
+  } catch (exception) {
+    console.error(exception);
+
+    throw exception;
+  }
+}
+
+export async function GetBusArrivalAnalysis(): Promise<BusArrivalAnalysis[]> {
+  try {
+    console.info("[services/travel-sg]: GetBusArrivalAnalysis()");
+
+    const busArrivalAnalysisResponseData = await sql`
+      SELECT "code", "number", "sentiment" 
+      FROM "bus_arrival_analysis";
+    `;
+
+    return busArrivalAnalysisResponseData.rows as BusArrivalAnalysis[];
   } catch (exception) {
     console.error(exception);
 
@@ -254,65 +324,20 @@ export async function GetNearestBusStops(location: { latitude: number; longitude
   }
 }
 
-export async function GetBusArrivals(code: string): Promise<BusArrival[]> {
+export async function GetBusStopBusArrivalAnalysis(code: string): Promise<BusArrivalAnalysis[]> {
   try {
-    console.info("[services/travel-sg]: GetBusArrivals()");
+    console.info("[services/travel-sg]: GetBusStopBusArrivalAnalysis()");
 
-    const busStopInformationResponseData = await sql`
-      SELECT "bus_stop"."code", "bus_stop"."name", "bus_stop"."road"
-      FROM "bus_stop"
-      FULL JOIN "bus_route"
-      ON "bus_route"."code" = "bus_stop"."code"
-      WHERE "bus_route"."code" = ${code};
+    const busArrivalAnalysisResponseData = await sql`
+      SELECT "code", "number", "sentiment" 
+      FROM "bus_arrival_analysis"
+      WHERE "code" = ${code};
     `;
 
-    if (busStopInformationResponseData.rows.length === 0) {
-      return [];
-    }
-
-    const busServicesInformationResponseData = await sql`
-      SELECT "bus_service"."number"
-      FROM "bus_service"
-      FULL JOIN "bus_route"
-      ON "bus_route"."number" = "bus_service"."number"
-      WHERE "bus_route"."code" = ${code};
-    `;
-
-    if (busServicesInformationResponseData.rows.length === 0) {
-      return [];
-    }
-
-    return busServicesInformationResponseData.rows.map((busService) => {
-      return {
-        code: code,
-        number: busService.number,
-        arrivals: [
-          {
-            arrival: "-",
-            load: "-",
-            feature: "-",
-            type: "-",
-          },
-          {
-            arrival: "-",
-            load: "-",
-            feature: "-",
-            type: "-",
-          },
-          {
-            arrival: "-",
-            load: "-",
-            feature: "-",
-            type: "-",
-          },
-        ],
-      };
-    });
+    return busArrivalAnalysisResponseData.rows as BusArrivalAnalysis[];
   } catch (exception) {
     console.error(exception);
 
     throw exception;
   }
 }
-
-export async function AnalyseBusArrivalReviews() {}

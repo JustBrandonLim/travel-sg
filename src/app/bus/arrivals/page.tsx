@@ -2,7 +2,7 @@
 
 import { useSearchParams, notFound } from "next/navigation";
 import { useState, useEffect } from "react";
-import { BusArrival } from "@interfaces/travel-sg";
+import { BusArrival, BusArrivalAnalysis } from "@interfaces/travel-sg";
 import { MessageSquarePlus, X } from "lucide-react";
 
 export const runtime = "edge";
@@ -16,6 +16,7 @@ export default function BusArrivalsPage() {
 
   const [ready, setReady] = useState<boolean>(false);
   const [busArrivals, setBusArrivals] = useState<BusArrival[]>([]);
+  const [busArrivalAnalysis, setBusArrivalAnalysis] = useState<BusArrivalAnalysis[]>([]);
 
   const [busArrivalFeedbackModal, setBusArrivalFeedbackModal] = useState<boolean>(false);
   const [busArrivalFeedbackCode, setBusArrivalFeedbackCode] = useState<string>();
@@ -31,7 +32,13 @@ export default function BusArrivalsPage() {
       });
       const busArrivalsResponseData: BusArrival[] = await busArrivalsResponse.json();
 
+      const busArrivalAnalysisResponse = await fetch(`/api/bus/arrivals/analysis?code=${code}`, {
+        cache: "no-store",
+      });
+      const busArrivalAnalysisResponseData: BusArrivalAnalysis[] = await busArrivalAnalysisResponse.json();
+
       setBusArrivals(busArrivalsResponseData);
+      setBusArrivalAnalysis(busArrivalAnalysisResponseData);
       setReady(true);
     })();
   }, [busArrivals]);
@@ -41,19 +48,10 @@ export default function BusArrivalsPage() {
 
     setBusArrivalFeedbackCode(code);
     setBusArrivalFeedbackNumber(number);
-
-    /*await fetch("/api/bus/arrivals/Feedbacks", {
-      method: "POST",
-      body: JSON.stringify({
-        code: code,
-        number: number,
-        content: content,
-      }),
-    });*/
   }
 
   async function submitBusArrivalFeedbackModal() {
-    await fetch("/api/bus/arrivals/feedbacks", {
+    await fetch("/api/bus/arrivals/feedback", {
       method: "POST",
       body: JSON.stringify({
         code: busArrivalFeedbackCode,
@@ -87,7 +85,14 @@ export default function BusArrivalsPage() {
             return (
               <div key={index} className="flex flex-col gap-1">
                 <div className="items-end flex justify-between">
-                  <h2 className="font-bold text-sm">{busArrival.number}</h2>
+                  <div className="flex gap-3 items-center">
+                    <h2 className="font-bold text-sm">{busArrival.number}</h2>
+                    <h3 className="p-1 bg-neutral-300 rounded-md">
+                      {busArrivalAnalysis.find((busArrivalAnalysis) => {
+                        return busArrivalAnalysis.number == busArrival.number;
+                      })?.sentiment ?? "NO SENTIMENT"}
+                    </h3>
+                  </div>
                   <div className="flex gap-1 items-center">
                     <button
                       className="p-1 outline outline-1 outline-neutral-300 hover:bg-neutral-300 transition-colors rounded-md"

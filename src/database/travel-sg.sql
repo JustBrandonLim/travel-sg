@@ -31,9 +31,11 @@ CREATE TABLE IF NOT EXISTS bus_arrival_feedback(
   PRIMARY KEY(id, code, number)
 );
 
-CREATE TABLE IF NOT EXISTS bus_arrival_feedback_analysis(
+CREATE TABLE IF NOT EXISTS bus_arrival_analysis(
   code VARCHAR(5) REFERENCES bus_stop(code) ON DELETE CASCADE,
   number VARCHAR(4) REFERENCES bus_service(number) ON DELETE CASCADE,
+  positive_sentiment numeric,
+  negative_sentiment numeric,
   sentiment VARCHAR(255),
   PRIMARY KEY(code, number)
 );

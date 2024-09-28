@@ -6,11 +6,11 @@ export const runtime = "edge";
 
 export async function POST(request: NextRequest) {
   try {
-    console.info("[api/bus/arrivals/feedbacks]: POST()");
+    console.info("[api/bus/arrivals/feedback]: POST()");
 
     const busArrivalFeedback: BusArrivalFeedback = await request.json();
 
-    console.info("[api/bus/arrivals/feedbacks]: Inserting BusArrivalFeedback to TravelSG");
+    console.info("[api/bus/arrivals/feedback]: Inserting BusArrivalFeedback to TravelSG");
     await InsertBusArrivalFeedback(busArrivalFeedback.code, busArrivalFeedback.number, busArrivalFeedback.content);
 
     return NextResponse.json({ message: "Inserted BusArrivalFeedback to TravelSG." }, { status: 200 });

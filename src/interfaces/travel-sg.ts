@@ -37,3 +37,11 @@ export interface BusArrivalFeedback {
   number: string;
   content: string;
 }
+
+export interface BusArrivalAnalysis {
+  code: string;
+  number: string;
+  positiveSentiment: number;
+  negativeSentiment: number;
+  sentiment: string;
+}
