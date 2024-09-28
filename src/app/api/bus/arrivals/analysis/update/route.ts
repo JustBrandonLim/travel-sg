@@ -1,12 +1,18 @@
-import { InsertBusArrivalAnalysis } from "@services/travel-sg";
+import { BusArrivalFeedback } from "@interfaces/travel-sg";
+import { GetBusArrivalFeedbacks, InsertBusArrivalAnalysis } from "@services/travel-sg";
 import { NextRequest, NextResponse } from "next/server";
 
-export async function POST(request: NextRequest) {
+export const revalidate = 0;
+
+export async function GET(request: NextRequest) {
   try {
     console.info("[api/bus/arrivals/analysis/update]: POST()");
 
+    console.info("[api/bus/arrivals/analysis/update]: Getting BusArrivalFeedbacks from TravelSG");
+    let busArrivalFeedbacks: BusArrivalFeedback[] = await GetBusArrivalFeedbacks();
+
     console.info("[api/bus/arrivals/analysis/update]: Inserting BusArrivalAnalysis to TravelSG");
-    await InsertBusArrivalAnalysis();
+    await InsertBusArrivalAnalysis(busArrivalFeedbacks);
 
     return NextResponse.json({ message: "Inserted BusArrivalAnalysis to TravelSG." }, { status: 200 });
   } catch (exception) {

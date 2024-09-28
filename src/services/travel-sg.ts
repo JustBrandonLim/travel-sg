@@ -149,22 +149,17 @@ export async function InsertBusArrivalFeedback(code: string, number: string, con
   }
 }
 
-export async function InsertBusArrivalAnalysis(): Promise<void> {
+export async function InsertBusArrivalAnalysis(busArrivalFeedbacks: BusArrivalFeedback[]): Promise<void> {
   try {
-    console.info("[services/travel-sg]: InsertBusArrivalFeedbackAnalysis()");
+    console.info("[services/travel-sg]: InsertBusArrivalAnalysis()");
 
-    const busArrivalFeedbacksResponseData = await sql`
-      SELECT "code", "number", "content"
-      FROM "bus_arrival_feedback";
-    `;
-
-    if (busArrivalFeedbacksResponseData.rows.length === 0) {
+    if (busArrivalFeedbacks.length === 0) {
       return;
     }
 
     const classifier = await pipeline("sentiment-analysis");
 
-    const contents = (busArrivalFeedbacksResponseData.rows as BusArrivalFeedback[]).map((busArrivalFeedback) => {
+    const contents = (busArrivalFeedbacks as BusArrivalFeedback[]).map((busArrivalFeedback) => {
       return busArrivalFeedback.content;
     });
 
@@ -172,7 +167,7 @@ export async function InsertBusArrivalAnalysis(): Promise<void> {
 
     const busArrivalAnalysis: BusArrivalAnalysis[] = [];
 
-    busArrivalFeedbacksResponseData.rows.forEach((busArrivalFeedback, index) => {
+    busArrivalFeedbacks.forEach((busArrivalFeedback, index) => {
       const sentiment = sentiments[index];
 
       const busArrivalAnalysisIndex = busArrivalAnalysis.findIndex(
@@ -204,8 +199,6 @@ export async function InsertBusArrivalAnalysis(): Promise<void> {
     await sql`
       TRUNCATE "bus_arrival_analysis" CASCADE;
     `;
-
-    console.log(busArrivalAnalysis[0].positiveSentiment);
 
     await sql`
       INSERT INTO "bus_arrival_analysis"("code", "number", "positive_sentiment", "negative_sentiment", "sentiment")
@@ -333,6 +326,8 @@ export async function GetBusStopBusArrivalAnalysis(code: string): Promise<BusArr
       FROM "bus_arrival_analysis"
       WHERE "code" = ${code};
     `;
+
+    console.log(busArrivalAnalysisResponseData.rows);
 
     return busArrivalAnalysisResponseData.rows as BusArrivalAnalysis[];
   } catch (exception) {
