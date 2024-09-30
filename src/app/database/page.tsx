@@ -1,10 +1,12 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { BusStop, BusService, BusRoute } from "@interfaces/travel-sg";
+import { BusStop, BusService, BusRoute, BusArrivalFeedback, BusArrivalAnalysis } from "@interfaces/travel-sg";
 import BusStopCard from "@components/database/bus-stop-card";
 import BusServiceCard from "@components/database/bus-service-card";
 import BusRouteCard from "@components/database/bus-route-card";
+import BusArrivalFeedbackCard from "@components/database/bus-arrival-feedback-card";
+import BusArrivalAnalysisCard from "@components/database/bus-arrival-analysis-card";
 
 export const runtime = "edge";
 
@@ -14,10 +16,14 @@ export default function DatabasePage() {
   const [showBusStopSearchResults, setShowBusStopSearchResults] = useState<boolean>(false);
   const [showBusServiceSearchResults, setShowBusServiceSearchResults] = useState<boolean>(false);
   const [showBusRouteSearchResults, setShowBusRouteSearchResults] = useState<boolean>(false);
+  const [showBusArrivalFeedbackSearchResults, setShowBusArrivalFeedbackSearchResults] = useState<boolean>(false);
+  const [showBusArrivalAnalysisSearchResults, setShowBusArrivalAnalysisSearchResults] = useState<boolean>(false);
 
   const [busStops, setBusStops] = useState<BusStop[]>([]);
   const [busServices, setBusServices] = useState<BusService[]>([]);
   const [busRoutes, setBusRoutes] = useState<BusRoute[]>([]);
+  const [busArrivalFeedbacks, setBusArrivalFeedbacks] = useState<BusArrivalFeedback[]>([]);
+  const [busArrivalAnalysis, setBusArrivalAnalysis] = useState<BusArrivalAnalysis[]>([]);
 
   useEffect(() => {
     if (busStops.length === 0) {
@@ -46,6 +52,24 @@ export default function DatabasePage() {
         setBusRoutes(busRoutesResponseData);
       })();
     }
+
+    if (busArrivalFeedbacks.length === 0) {
+      (async () => {
+        const busArrivalFeedbacksResponse = await fetch(`/api/bus/arrivals/feedbacks`, { cache: "no-store" });
+        const busArrivalFeedbacksResponseData: BusArrivalFeedback[] = await busArrivalFeedbacksResponse.json();
+
+        setBusArrivalFeedbacks(busArrivalFeedbacksResponseData);
+      })();
+    }
+
+    if (busArrivalAnalysis.length === 0) {
+      (async () => {
+        const busArrivalAnalysisResponse = await fetch(`/api/bus/arrivals/analysis?code=all`, { cache: "no-store" });
+        const busArrivalAnalysisResponseData: BusArrivalAnalysis[] = await busArrivalAnalysisResponse.json();
+
+        setBusArrivalAnalysis(busArrivalAnalysisResponseData);
+      })();
+    }
   }, []);
 
   return (
@@ -58,7 +82,7 @@ export default function DatabasePage() {
           className="rounded-md w-full p-3 outline-none border border-neutral-300"
         />
 
-        <div className="flex gap-3">
+        <div className="flex gap-3 flex-wrap">
           <button
             onClick={() => setShowBusStopSearchResults(!showBusStopSearchResults)}
             className={`p-3 outline outline-1 outline-neutral-300 hover:bg-neutral-300 transition-colors rounded-md ${
@@ -80,8 +104,23 @@ export default function DatabasePage() {
             }`}>
             Bus Routes
           </button>
+          <button
+            onClick={() => setShowBusArrivalFeedbackSearchResults(!showBusArrivalFeedbackSearchResults)}
+            className={`p-3 outline outline-1 outline-neutral-300 hover:bg-neutral-300 transition-colors rounded-md ${
+              showBusArrivalFeedbackSearchResults && `bg-neutral-300`
+            }`}>
+            Bus Arrival Feedbacks
+          </button>
+          <button
+            onClick={() => setShowBusArrivalAnalysisSearchResults(!showBusArrivalAnalysisSearchResults)}
+            className={`p-3 outline outline-1 outline-neutral-300 hover:bg-neutral-300 transition-colors rounded-md ${
+              showBusArrivalAnalysisSearchResults && `bg-neutral-300`
+            }`}>
+            Bus Arrival Analysis
+          </button>
         </div>
       </div>
+
       {showBusStopSearchResults &&
         searchQuery.length > 0 &&
         busStops
@@ -104,6 +143,7 @@ export default function DatabasePage() {
               />
             );
           })}
+
       {showBusServiceSearchResults &&
         searchQuery.length > 0 &&
         busServices
@@ -137,6 +177,48 @@ export default function DatabasePage() {
           })
           .map((busRoute, index) => {
             return <BusRouteCard key={index} code={busRoute.code} number={busRoute.number} sequence={busRoute.sequence} />;
+          })}
+
+      {showBusArrivalFeedbackSearchResults &&
+        searchQuery.length > 0 &&
+        busArrivalFeedbacks
+          .filter((busArrivalFeedbacks) => {
+            return (
+              busArrivalFeedbacks.code.toLowerCase().includes(searchQuery.toLowerCase()) ||
+              busArrivalFeedbacks.number.toLowerCase().includes(searchQuery.toLowerCase())
+            );
+          })
+          .map((busArrivalFeedback, index) => {
+            return (
+              <BusArrivalFeedbackCard
+                key={index}
+                code={busArrivalFeedback.code}
+                number={busArrivalFeedback.number}
+                content={busArrivalFeedback.content}
+              />
+            );
+          })}
+
+      {showBusArrivalAnalysisSearchResults &&
+        searchQuery.length > 0 &&
+        busArrivalAnalysis
+          .filter((busArrivalAnalysis) => {
+            return (
+              busArrivalAnalysis.code.toLowerCase().includes(searchQuery.toLowerCase()) ||
+              busArrivalAnalysis.number.toLowerCase().includes(searchQuery.toLowerCase())
+            );
+          })
+          .map((busArrivalAnalysis, index) => {
+            return (
+              <BusArrivalAnalysisCard
+                key={index}
+                code={busArrivalAnalysis.code}
+                number={busArrivalAnalysis.number}
+                positiveSentiment={busArrivalAnalysis.positiveSentiment}
+                negativeSentiment={busArrivalAnalysis.negativeSentiment}
+                sentiment={busArrivalAnalysis.sentiment}
+              />
+            );
           })}
     </main>
   );

@@ -33,13 +33,6 @@ export default function SideBar() {
       <ul className="flex flex-col gap-3">
         <li>
           <Link
-            href="/analysis"
-            className={`p-3 hover:bg-neutral-300 transition-colors rounded-md block ${path.startsWith("/analysis") && `bg-neutral-300`}`}>
-            <LineChart />
-          </Link>
-        </li>
-        <li>
-          <Link
             href="/database"
             className={`p-3 hover:bg-neutral-300 transition-colors rounded-md block ${path.startsWith("/database") && `bg-neutral-300`}`}>
             <Database />

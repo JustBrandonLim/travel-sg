@@ -2,8 +2,6 @@ import { BusArrivalFeedback } from "@interfaces/travel-sg";
 import { InsertBusArrivalFeedback } from "@services/travel-sg";
 import { NextRequest, NextResponse } from "next/server";
 
-export const runtime = "edge";
-
 export async function POST(request: NextRequest) {
   try {
     console.info("[api/bus/arrivals/feedback]: POST()");

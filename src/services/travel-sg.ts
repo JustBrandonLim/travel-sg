@@ -287,7 +287,7 @@ export async function GetBusArrivalAnalysis(): Promise<BusArrivalAnalysis[]> {
     console.info("[services/travel-sg]: GetBusArrivalAnalysis()");
 
     const busArrivalAnalysisResponseData = await sql`
-      SELECT "code", "number", "sentiment" 
+      SELECT "code", "number", "positive_sentiment" AS "positiveSentiment", "negative_sentiment" AS "negativeSentiment", "sentiment" 
       FROM "bus_arrival_analysis";
     `;
 
@@ -326,8 +326,6 @@ export async function GetBusStopBusArrivalAnalysis(code: string): Promise<BusArr
       FROM "bus_arrival_analysis"
       WHERE "code" = ${code};
     `;
-
-    console.log(busArrivalAnalysisResponseData.rows);
 
     return busArrivalAnalysisResponseData.rows as BusArrivalAnalysis[];
   } catch (exception) {

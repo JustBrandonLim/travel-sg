@@ -1,5 +1,5 @@
 import { BusArrivalAnalysis } from "@interfaces/travel-sg";
-import { GetBusStopBusArrivalAnalysis } from "@services/travel-sg";
+import { GetBusArrivalAnalysis, GetBusStopBusArrivalAnalysis } from "@services/travel-sg";
 import { NextRequest, NextResponse } from "next/server";
 
 export const runtime = "edge";
@@ -11,7 +11,14 @@ export async function GET(request: NextRequest) {
     const code = String(request.nextUrl.searchParams.get("code"));
 
     console.info("[api/bus/arrivals/analysis]: Getting BusStopBusArrivalAnalysis from TravelSG");
-    const busArrivalAnalysis: BusArrivalAnalysis[] = await GetBusStopBusArrivalAnalysis(code);
+
+    let busArrivalAnalysis: BusArrivalAnalysis[] = [];
+
+    if (code === "all") {
+      busArrivalAnalysis = await GetBusArrivalAnalysis();
+    } else {
+      busArrivalAnalysis = await GetBusStopBusArrivalAnalysis(code);
+    }
 
     return NextResponse.json(busArrivalAnalysis, { status: 200 });
   } catch (exception) {
