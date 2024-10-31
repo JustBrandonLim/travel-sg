@@ -1,6 +1,6 @@
-import { BusStop, BusService, BusRoute, BusArrival, BusArrivalFeedback, BusArrivalAnalysis } from "@interfaces/travel-sg";
+import { BusStop, BusService, BusRoute, BusArrivalFeedback, BusArrivalAnalysis } from "@interfaces/travel-sg";
 import { sql } from "@vercel/postgres";
-import { pipeline, TextClassificationOutput } from "@xenova/transformers";
+import { pipeline, TextClassificationOutput } from "@huggingface/transformers";
 
 /**
  * This function takes in fetched and transformed BusStops, to filter and store the data into TravelSG's database.

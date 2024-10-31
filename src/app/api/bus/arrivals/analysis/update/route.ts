@@ -4,7 +4,7 @@ import { NextRequest, NextResponse } from "next/server";
 
 export const revalidate = 0;
 
-export async function GET(request: NextRequest) {
+export async function GET() {
   try {
     console.info("[api/bus/arrivals/analysis/update]: POST()");
 

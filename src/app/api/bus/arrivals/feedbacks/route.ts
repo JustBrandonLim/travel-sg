@@ -1,14 +1,14 @@
 import { BusArrivalFeedback } from "@interfaces/travel-sg";
 import { GetBusArrivalFeedbacks } from "@services/travel-sg";
-import { NextRequest, NextResponse } from "next/server";
+import { NextResponse } from "next/server";
 
 export const runtime = "edge";
 
-export async function GET(request: NextRequest) {
+export async function GET() {
   try {
     console.info("[api/bus/arrivals/feedbacks]: GET()");
 
-    console.info("[api/bus/arrivals/feedbacks]: Getting BusArrivals from LTA");
+    console.info("[api/bus/arrivals/feedbacks]: Getting BusArrivalFeedbacks from TravelSG");
     const busArrivalFeedbacks: BusArrivalFeedback[] = await GetBusArrivalFeedbacks();
 
     return NextResponse.json(busArrivalFeedbacks, { status: 200 });
