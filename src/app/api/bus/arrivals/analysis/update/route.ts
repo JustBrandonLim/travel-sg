@@ -1,6 +1,6 @@
 import { BusArrivalFeedback } from "@interfaces/travel-sg";
 import { GetBusArrivalFeedbacks, InsertBusArrivalAnalysis } from "@services/travel-sg";
-import { NextRequest, NextResponse } from "next/server";
+import { NextResponse } from "next/server";
 
 export const revalidate = 0;
 
