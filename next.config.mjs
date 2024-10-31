@@ -1,7 +1,7 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   experimental: {
-    serverComponentsExternalPackages: ["sharp", "onnxruntime-node"],
+    serverComponentsExternalPackages: ["@huggingface/transformers"],
   },
 };
 
