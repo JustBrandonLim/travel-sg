@@ -2,6 +2,7 @@ import { BusArrivalFeedback } from "@interfaces/travel-sg";
 import { GetBusArrivalFeedbacks, InsertBusArrivalAnalysis } from "@services/travel-sg";
 import { NextResponse } from "next/server";
 
+export const runtime = "edge";
 export const revalidate = 0;
 
 export async function GET() {

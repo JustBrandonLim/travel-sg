@@ -7,12 +7,12 @@ const __dirname = path.dirname(__filename); // get the name of the directory
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   webpack(config, { isServer }) {
-    config.resolve.alias = {
+    /*config.resolve.alias = {
       ...config.resolve.alias,
       "sharp$": false,
       "onnxruntime-node$": false,
       "@huggingface/transformers$": false
-    }
+    }*/
     
 	  config.resolve.alias['@huggingface/transformers'] = path.resolve(__dirname, 'node_modules/@huggingface/transformers');
 	
