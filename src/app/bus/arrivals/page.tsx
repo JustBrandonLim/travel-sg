@@ -57,6 +57,8 @@ export default function BusArrivalsPage() {
   }
 
   async function submitBusArrivalFeedbackModal() {
+    setBusArrivalFeedbackModal(false);
+
     await fetch("/api/bus/arrivals/feedback", {
       method: "POST",
       body: JSON.stringify({
@@ -65,8 +67,6 @@ export default function BusArrivalsPage() {
         content: busArrivalFeedbackContent,
       }),
     });
-
-    setBusArrivalFeedbackModal(false);
   }
 
   return (
