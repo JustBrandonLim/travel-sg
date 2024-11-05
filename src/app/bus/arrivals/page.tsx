@@ -3,7 +3,7 @@
 import { useSearchParams, notFound } from "next/navigation";
 import { useState, useEffect } from "react";
 import { BusArrival, BusArrivalAnalysis } from "@interfaces/travel-sg";
-import { MessageSquarePlus, X } from "lucide-react";
+import { RefreshCcw, MessageSquarePlus, X } from "lucide-react";
 
 export const runtime = "edge";
 
@@ -43,6 +43,12 @@ export default function BusArrivalsPage() {
     })();
   }, [busArrivals]);
 
+  function refreshBusArrivals() {
+    setBusArrivals([]);
+    setBusArrivalAnalysis([]);
+    setReady(false);
+  }
+
   function showBusArrivalFeedbackModal(code: string, number: string) {
     setBusArrivalFeedbackModal(true);
 
@@ -66,10 +72,18 @@ export default function BusArrivalsPage() {
   return (
     <main className="p-3 bg-neutral-300 rounded-md grow overflow-y-auto flex flex-col gap-3">
       <div className="flex flex-col gap-3 p-3 bg-white rounded-md">
-        <div className="flex flex-col gap-1">
-          <h2 className="font-bold text-sm">{name}</h2>
-          <h3 className="text-xs">{road}</h3>
-          <h3 className="text-xs">{code}</h3>
+        <div className="flex flex-row justify-between items-start">
+          <div className="flex flex-col gap-1">
+            <h2 className="font-bold text-sm">{name}</h2>
+            <h3 className="text-xs">{road}</h3>
+            <h3 className="text-xs">{code}</h3>
+          </div>
+
+          <button
+            className="p-1 outline outline-1 outline-neutral-300 hover:bg-neutral-300 transition-colors rounded-md"
+            onClick={() => refreshBusArrivals()}>
+            <RefreshCcw size={16} />
+          </button>
         </div>
 
         {!ready && (
@@ -90,7 +104,7 @@ export default function BusArrivalsPage() {
                     <h3 className="p-1 bg-neutral-300 rounded-md">
                       {busArrivalAnalysis.find((busArrivalAnalysis) => {
                         return busArrivalAnalysis.number == busArrival.number;
-                      })?.sentiment ?? "NO SENTIMENT"}
+                      })?.sentiment ?? "NEUTRAL"}
                     </h3>
                   </div>
                   <div className="flex gap-1 items-center">
