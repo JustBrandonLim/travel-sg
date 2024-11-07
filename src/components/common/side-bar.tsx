@@ -2,7 +2,7 @@
 
 import { usePathname } from "next/navigation";
 import Link from "next/link";
-import { Home, BusFront, TrainFront, LineChart, Database } from "lucide-react";
+import { Home, BusFront, TrainFront, Database } from "lucide-react";
 
 export const runtime = "edge";
 
