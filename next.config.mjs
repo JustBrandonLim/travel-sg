@@ -7,7 +7,7 @@ const __dirname = path.dirname(__filename);
 
 const nextConfig = {
   experimental: {
-    serverComponentsExternalPackages: ["@huggingface/transformers", "sharp", "onnxruntime-node"],
+    serverComponentsExternalPackages: ["sharp", "onnxruntime-node"],
   },
   webpack: (config) => {
     config.resolve.alias["@huggingface/transformers"] = path.resolve(__dirname, "node_modules/@huggingface/transformers");
