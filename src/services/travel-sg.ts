@@ -1,8 +1,8 @@
 import { BusStop, BusService, BusRoute, BusArrivalFeedback, BusArrivalAnalysis } from "@interfaces/travel-sg";
 import { sql } from "@vercel/postgres";
-import Sentiment from "sentiment";
-
 import { pipeline, TextClassificationOutput } from "@huggingface/transformers";
+
+//import Sentiment from "sentiment";
 
 /**
  * This function takes in fetched and transformed BusStops, to filter and store the data into TravelSG's database.
@@ -159,18 +159,15 @@ export async function InsertBusArrivalAnalysis(busArrivalFeedbacks: BusArrivalFe
       return;
     }
 
-    const classifier = await pipeline("sentiment-analysis");
-
-    const contents = (busArrivalFeedbacks as BusArrivalFeedback[]).map((busArrivalFeedback) => {
-      return busArrivalFeedback.content;
-    });
-
-    const sentiments = (await classifier(contents)) as TextClassificationOutput;
+    //const sentiment = new Sentiment();
 
     const busArrivalAnalysis: BusArrivalAnalysis[] = [];
 
-    busArrivalFeedbacks.forEach((busArrivalFeedback, index) => {
-      const sentiment = sentiments[index];
+    const classifier = await pipeline("sentiment-analysis", "Xenova/distilbert-base-uncased-finetuned-sst-2-english");
+
+    busArrivalFeedbacks.forEach(async (busArrivalFeedback, index) => {
+      const sentimentAnalysis = (await classifier(busArrivalFeedback.content)) as TextClassificationOutput;
+      console.log(sentimentAnalysis);
 
       const busArrivalAnalysisIndex = busArrivalAnalysis.findIndex(
         (busArrivalAnalysis) => busArrivalAnalysis.code === busArrivalFeedback.code && busArrivalAnalysis.number === busArrivalFeedback.number
@@ -180,15 +177,15 @@ export async function InsertBusArrivalAnalysis(busArrivalFeedbacks: BusArrivalFe
         busArrivalAnalysis.push({
           code: busArrivalFeedback.code,
           number: busArrivalFeedback.number,
-          positiveSentiment: sentiment.label === "POSITIVE" ? 1 : 0,
-          negativeSentiment: sentiment.label === "NEGATIVE" ? 1 : 0,
-          sentiment: sentiment.label === "POSITIVE" ? "POSITIVE" : "NEGATIVE",
+          positiveSentiment: sentimentAnalysis[0].label === "POSITIVE" ? 1 : 0,
+          negativeSentiment: sentimentAnalysis[0].label === "NEGATIVE" ? 1 : 0,
+          sentiment: sentimentAnalysis[0].label,
         });
       } else {
         const currentBusArrivalAnalysis = busArrivalAnalysis.at(busArrivalAnalysisIndex)!;
 
-        currentBusArrivalAnalysis.positiveSentiment += sentiment.label === "POSITIVE" ? 1 : 0;
-        currentBusArrivalAnalysis.negativeSentiment += sentiment.label === "NEGATIVE" ? 1 : 0;
+        currentBusArrivalAnalysis.positiveSentiment += sentimentAnalysis[0].label === "POSITIVE" ? 1 : 0;
+        currentBusArrivalAnalysis.negativeSentiment += sentimentAnalysis[0].label === "NEGATIVE" ? 1 : 0;
         currentBusArrivalAnalysis.sentiment =
           currentBusArrivalAnalysis.positiveSentiment > currentBusArrivalAnalysis.negativeSentiment
             ? "POSITIVE"
