@@ -1,4 +1,7 @@
-import { describe, test, expect } from "@jest/globals";
+/**
+ * @jest-environment node
+ */
+
 import { GET } from "./route";
 import { NextRequest } from "next/server";
 
