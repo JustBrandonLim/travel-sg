@@ -1,6 +1,7 @@
 import { BusStop, BusService, BusRoute, BusArrivalFeedback, BusArrivalAnalysis } from "@interfaces/travel-sg";
 import { sql } from "@vercel/postgres";
-import Sentiment from "sentiment";
+//import Sentiment from "sentiment";
+import { pipeline, TextClassificationOutput } from "@huggingface/transformers";
 
 /**
  * This function takes in fetched and transformed BusStops, to filter and store the data into TravelSG's database.
@@ -157,7 +158,7 @@ export async function InsertBusArrivalAnalysis(busArrivalFeedbacks: BusArrivalFe
       return;
     }
 
-    const sentiment = new Sentiment();
+    /*const sentiment = new Sentiment();
 
     const busArrivalAnalysis: BusArrivalAnalysis[] = [];
 
@@ -215,6 +216,45 @@ export async function InsertBusArrivalAnalysis(busArrivalFeedbacks: BusArrivalFe
 
         currentBusArrivalAnalysis.positiveSentiment += sentimentAnalysis.score > 0 ? 1 : 0;
         currentBusArrivalAnalysis.negativeSentiment += sentimentAnalysis.score < 0 ? 1 : 0;
+        currentBusArrivalAnalysis.sentiment =
+          currentBusArrivalAnalysis.positiveSentiment > currentBusArrivalAnalysis.negativeSentiment
+            ? "POSITIVE"
+            : currentBusArrivalAnalysis.negativeSentiment > currentBusArrivalAnalysis.positiveSentiment
+            ? "NEGATIVE"
+            : "NEUTRAL";
+      }
+    });*/
+
+    const classifier = await pipeline("sentiment-analysis");
+
+    const contents = (busArrivalFeedbacks as BusArrivalFeedback[]).map((busArrivalFeedback) => {
+      return busArrivalFeedback.content;
+    });
+
+    const sentiments = (await classifier(contents)) as TextClassificationOutput;
+
+    const busArrivalAnalysis: BusArrivalAnalysis[] = [];
+
+    busArrivalFeedbacks.forEach((busArrivalFeedback, index) => {
+      const sentiment = sentiments[index];
+
+      const busArrivalAnalysisIndex = busArrivalAnalysis.findIndex(
+        (busArrivalAnalysis) => busArrivalAnalysis.code === busArrivalFeedback.code && busArrivalAnalysis.number === busArrivalFeedback.number
+      );
+
+      if (busArrivalAnalysisIndex === -1) {
+        busArrivalAnalysis.push({
+          code: busArrivalFeedback.code,
+          number: busArrivalFeedback.number,
+          positiveSentiment: sentiment.label === "POSITIVE" ? 1 : 0,
+          negativeSentiment: sentiment.label === "NEGATIVE" ? 1 : 0,
+          sentiment: sentiment.label === "POSITIVE" ? "POSITIVE" : "NEGATIVE",
+        });
+      } else {
+        const currentBusArrivalAnalysis = busArrivalAnalysis.at(busArrivalAnalysisIndex)!;
+
+        currentBusArrivalAnalysis.positiveSentiment += sentiment.label === "POSITIVE" ? 1 : 0;
+        currentBusArrivalAnalysis.negativeSentiment += sentiment.label === "NEGATIVE" ? 1 : 0;
         currentBusArrivalAnalysis.sentiment =
           currentBusArrivalAnalysis.positiveSentiment > currentBusArrivalAnalysis.negativeSentiment
             ? "POSITIVE"
